@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Panel - Mariachi Tico Show</title>
+    <style>
+        :root {
+            --verde-mexicano: #28a745;
+            --fondo-claro: #f4f6f9;
+            --texto-oscuro: #2c3e50;
+            --rojo: #cc0000;
+            --azul: #007bff;
+        }
+
+        body { font-family: sans-serif; background-color: var(--fondo-claro); margin: 0; padding: 15px; }
+
+        .header-card {
+            background-color: var(--verde-mexicano);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .saldo-title { font-size: 14px; opacity: 0.9; }
+        .saldo-valor { font-size: 32px; font-weight: bold; margin: 5px 0 15px 0; }
+
+        .stats { display: flex; justify-content: space-between; border-top: 1px solid rgba(255,255,255,0.3); padding-top: 15px; }
+        .stat-item { text-align: center; }
+        .stat-val { font-size: 18px; font-weight: bold; }
+        .stat-label { font-size: 12px; opacity: 0.8; }
+
+        .btn-retirar {
+            width: 100%; background: white; color: var(--verde-mexicano);
+            border: none; padding: 12px; border-radius: 10px;
+            font-weight: bold; margin-top: 15px; cursor: pointer;
+        }
+
+        .section-title { font-weight: bold; color: var(--texto-oscuro); margin: 20px 0 10px 0; }
+        .card { background: white; padding: 15px; border-radius: 12px; margin-bottom: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        
+        .show-info { font-weight: bold; color: var(--texto-oscuro); }
+        .show-sub { font-size: 13px; color: #666; margin-top: 5px; }
+        
+        .btn-aceptar {
+            width: 100%; background: var(--verde-mexicano); color: white;
+            border: none; padding: 10px; margin-top: 10px; border-radius: 8px;
+            font-weight: bold; cursor: pointer;
+        }
+        
+        .badge-gps {
+            display: inline-block; padding: 5px 8px; border-radius: 5px; font-size: 12px; font-weight: bold; margin-top: 8px;
+        }
+        .badge-bloqueado { background: #ffe6e6; color: var(--rojo); border: 1px solid var(--rojo); }
+        .badge-desbloqueado { background: #e6f9ec; color: var(--verde-mexicano); border: 1px solid var(--verde-mexicano); }
+
+        .btn-prueba {
+            width: 100%; background: var(--azul); color: white; border: none; padding: 12px;
+            border-radius: 8px; font-weight: bold; margin-bottom: 15px; cursor: pointer;
+        }
+
+        .historial-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #eee; }
+        .mov-text { font-size: 14px; }
+        .mov-monto { font-weight: bold; color: var(--verde-mexicano); }
+    </style>
+</head>
+<body>
+
+    <div class="header-card">
+        <div class="saldo-title">Saldo Disponible para Retirar</div>
+        <div class="saldo-valor">$350.000</div>
+        <div class="stats">
+            <div class="stat-item"><div class="stat-val">12</div><div class="stat-label">Shows (Mes)</div></div>
+            <div class="stat-item"><div class="stat-val">★ 4.9</div><div class="stat-label">Calificación</div></div>
+        </div>
+        <button class="btn-retirar">Retirar Dinero</button>
+    </div>
+
+    <div class="section-title">🚀 Shows Disponibles (Cerrojo GPS)</div>
+    <button class="btn-prueba" onclick="simularLlegada()">[Modo Prueba] Simular que llegué a 100 metros</button>
+    
+    <div id="contenedor-shows">
+        <p style="text-align: center; color: #666; font-size: 14px;">Buscando shows disponibles...</p>
+    </div>
+
+    <div class="section-title">📅 Próximos Shows Aceptados</div>
+    <div id="contenedor-aceptados">
+        <p style="text-align: center; color: #666; font-size: 14px;">No tenés shows agendados aún.</p>
+    </div>
+
+    <div class="section-title">📜 Historial de Movimientos</div>
+    <div class="card">
+        <div class="historial-item">
+            <div class="mov-text">Llavallol (10 Jul - 22:00 hs)</div>
+            <div class="mov-monto">+$90.000</div>
+        </div>
+        <div class="historial-item">
+            <div class="mov-text">Lanús (05 Jul - 20:30 hs)</div>
+            <div class="mov-monto">+$120.000</div>
+        </div>
+    </div>
+
+    <script type="module">
+        // Importamos updateDoc y doc para poder modificar los datos en la nube
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getFirestore, collection, onSnapshot, query, orderBy, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBVKFC0n5uuLHbZlZfmrif3NJcPrWddfrw",
+            authDomain: "mariachiapp-20088.firebaseapp.com",
+            projectId: "mariachiapp-20088",
+            storageBucket: "mariachiapp-20088.firebasestorage.app",
+            messagingSenderId: "36561840199",
+            appId: "1:36561840199:web:f3ecfd328b2dde5613a962"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        const contenedorShows = document.getElementById('contenedor-shows');
+        const contenedorAceptados = document.getElementById('contenedor-aceptados');
+        
+        let musicoLat = null;
+        let musicoLon = null;
+        let listaDeShows = [];
+
+        const SHOW_TEST_LAT = -34.795; 
+        const SHOW_TEST_LON = -58.428;
+
+        function calcularDistancia(lat1, lon1, lat2, lon2) {
+            const R = 6371; 
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
+            return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))); 
+        }
+
+        // FUNCIÓN SEPARADORA E INTELIGENTE
+        function renderizarShows() {
+            contenedorShows.innerHTML = '';
+            contenedorAceptados.innerHTML = '';
+
+            let contDisponibles = 0;
+            let contAceptados = 0;
+
+            listaDeShows.forEach((docSnap) => {
+                const showInfo = docSnap.data();
+                const idDocumento = docSnap.id; // Guardamos el ID único de Firebase
+                const montoFormateado = showInfo.monto ? showInfo.monto.toLocaleString('es-AR') : 'A confirmar';
+                
+                // CIRCUITO A: SI EL SHOW ESTÁ DISPONIBLE (PAGADO)
+                if (showInfo.estado === "Pagado") {
+                    contDisponibles++;
+                    
+                    let textoDireccion = "📍 Dirección oculta (A más de 200m)";
+                    let badgeHTML = `<span class="badge-gps badge-bloqueado">⏳ Esperando señal de GPS...</span>`;
+                    
+                    if (musicoLat !== null && musicoLon !== null) {
+                        const distancia = calcularDistancia(musicoLat, musicoLon, SHOW_TEST_LAT, SHOW_TEST_LON);
+                        
+                        if (distancia <= 0.2) { 
+                            textoDireccion = `📍 DIRECCIÓN: ${showInfo.direccion_real || 'No especificada'}`;
+                            badgeHTML = `<span class="badge-gps badge-desbloqueado">🔓 ¡Llegaste! Dirección liberada</span>`;
+                        } else {
+                            textoDireccion = "📍 Dirección oculta (Se revela a menos de 200m)";
+                            badgeHTML = `<span class="badge-gps badge-bloqueado">🔒 Bloqueado a ${distancia.toFixed(1)} km</span>`;
+                        }
+                    }
+
+                    const colorBorde = (musicoLat && calcularDistancia(musicoLat, musicoLon, SHOW_TEST_LAT, SHOW_TEST_LON) <= 0.2) ? '#28a745' : '#cc0000';
+
+                    const tarjetaDisponible = `
+                    <div class="card" style="border-left: 5px solid ${colorBorde};">
+                        <div class="show-info">NUEVO SHOW - ${showInfo.tipo}</div>
+                        <div class="show-sub" style="font-weight: bold; color: #333;">${textoDireccion}</div>
+                        <div class="show-sub">Músicos requeridos: ${showInfo.cantidad_musicos || 3}</div>
+                        <div class="show-sub">Pago total: $${montoFormateado}</div>
+                        ${badgeHTML}<br>
+                        <button class="btn-aceptar" onclick="aceptarShow('${idDocumento}')">Aceptar este Show</button>
+                    </div>
+                    `;
+                    contenedorShows.innerHTML += tarjetaDisponible;
+                }
+                
+                // CIRCUITO B: SI EL SHOW YA FUE ACEPTADO POR EL MÚSICO
+                else if (showInfo.estado === "Aceptado") {
+                    contAceptados++;
+                    
+                    const tarjetaAceptada = `
+                    <div class="card" style="border-left: 5px solid #007bff;">
+                        <div class="show-info" style="color:#007bff;">✅ SHOW AGENDADO - ${showInfo.tipo}</div>
+                        <div class="show-sub">📍 Dirección reservada en la nube</div>
+                        <div class="show-sub">Músicos: ${showInfo.cantidad_musicos} | Valor: $${montoFormateado}</div>
+                        <div class="show-sub" style="color:var(--verde-mexicano); font-weight:bold; margin-top:5px;">El show ya es tuyo. Viajá a la zona para liberar el GPS.</div>
+                    </div>
+                    `;
+                    contenedorAceptados.innerHTML += tarjetaAceptada;
+                }
+            });
+
+            // Carteles por si las secciones quedan vacías
+            if (contDisponibles === 0) {
+                contenedorShows.innerHTML = '<p style="text-align: center; color: #666; font-size: 14px;">No hay shows nuevos por el momento.</p>';
+            }
+            if (contAceptados === 0) {
+                contenedorAceptados.innerHTML = '<p style="text-align: center; color: #666; font-size: 14px;">No tenés shows agendados aún.</p>';
+            }
+        }
+
+        // FUNCIÓN QUE MODIFICA FIREBASE EN TIEMPO REAL
+        window.aceptarShow = async function(id) {
+            const confirmar = confirm("¿Querés aceptar este show para tu grupo?");
+            if (!confirmar) return;
+
+            try {
+                // Buscamos el documento exacto en Firebase y le cambiamos el estado
+                const docRef = doc(db, "shows_confirmados", id);
+                await updateDoc(docRef, {
+                    estado: "Aceptado"
+                });
+                alert("¡Show aceptado con éxito! Ya se sumó a tu agenda.");
+            } catch (error) {
+                console.error("Error al aceptar show:", error);
+                alert("Hubo un problema al reclamar el show.");
+            }
+        };
+
+        // Escuchar Firebase
+        const q = query(collection(db, "shows_confirmados"), orderBy("fecha", "desc"));
+        onSnapshot(q, (snapshot) => {
+            listaDeShows = [];
+            snapshot.forEach((doc) => listaDeShows.push(doc));
+            renderizarShows();
+        });
+
+        // Simulación de GPS
+        window.simularLlegada = function() {
+            musicoLat = SHOW_TEST_LAT + 0.0005; 
+            musicoLon = SHOW_TEST_LON;
+            renderizarShows();
+        };
+
+        // GPS del sistema
+        if (navigator.geolocation) {
+            navigator.geolocation.watchPosition((position) => {
+                musicoLat = position.coords.latitude;
+                musicoLon = position.coords.longitude;
+                renderizarShows();
+            }, () => {});
+        }
+    </script>
+
+</body>
+</html>
