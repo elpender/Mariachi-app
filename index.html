@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Mariachi App</title>
+    <style>
+        /* Paleta de Colores Mexicanos y Base */
+        :root {
+            --verde-esmeralda: #009B77;
+            --rojo-mexicano: #DA291C;
+            --amarillo-trigo: #F5DEB3;
+            --fondo-claro: #F8F9FA;
+            --texto-oscuro: #333333;
+            --texto-gris: #666666;
+            --facebook-blue: #1877F2;
+        }
+
+        body {
+            background-color: var(--fondo-claro);
+            color: var(--texto-oscuro);
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        .login-card {
+            background-color: white;
+            border-top: 5px solid var(--verde-esmeralda);
+            border-radius: 12px;
+            padding: 30px 20px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .logo-area {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .logo-area h2 {
+            margin: 0;
+            font-size: 24px;
+            color: var(--texto-oscuro);
+        }
+
+        /* Selector de Rol (Cliente / Músico) */
+        .role-selector {
+            display: flex;
+            justify-content: space-between;
+            background-color: #f1f1f1;
+            border-radius: 8px;
+            padding: 4px;
+            margin-bottom: 20px;
+        }
+
+        .role-option {
+            flex: 1;
+            text-align: center;
+        }
+
+        .role-option input[type="radio"] {
+            display: none; /* Ocultamos el circulito tradicional */
+        }
+
+        .role-option label {
+            display: block;
+            padding: 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            color: var(--texto-gris);
+            transition: all 0.3s;
+        }
+
+        /* Cambia de color cuando seleccionás una opción */
+        .role-option input[type="radio"]:checked + label {
+            background-color: white;
+            color: var(--verde-esmeralda);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        /* Formulario estándar */
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            box-sizing: border-box;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--verde-esmeralda);
+        }
+
+        /* Enlace de Olvidé mi contraseña */
+        .forgot-password {
+            display: block;
+            text-align: right;
+            font-size: 13px;
+            color: var(--verde-esmeralda);
+            text-decoration: none;
+            margin-bottom: 20px;
+            margin-top: -5px;
+        }
+
+        /* Botón Principal */
+        .btn-primary {
+            width: 100%;
+            padding: 14px;
+            background-color: var(--verde-esmeralda);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+
+        /* Separador "O ingresá con" */
+        .divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            color: var(--texto-gris);
+            font-size: 13px;
+            margin-bottom: 20px;
+        }
+
+        .divider::before, .divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .divider:not(:empty)::before {
+            margin-right: .25em;
+        }
+
+        .divider:not(:empty)::after {
+            margin-left: .25em;
+        }
+
+        /* Botones Sociales */
+        .btn-social {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            box-sizing: border-box;
+        }
+
+        .btn-google {
+            background-color: white;
+            color: var(--texto-oscuro);
+            border: 1px solid #ddd;
+        }
+
+        .btn-facebook {
+            background-color: var(--facebook-blue);
+            color: white;
+            border: none;
+        }
+
+        .icon-social {
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-card">
+        <div class="logo-area">
+            <h2>Iniciar Sesión</h2>
+        </div>
+
+        <div class="role-selector">
+            <div class="role-option">
+                <input type="radio" id="rol-cliente" name="tipo-usuario" value="cliente" checked>
+                <label for="rol-cliente">👤 Soy Cliente</label>
+            </div>
+            <div class="role-option">
+                <input type="radio" id="rol-musico" name="tipo-usuario" value="musico">
+                <label for="rol-musico">🎸 Soy Músico</label>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <input type="text" id="usuario" placeholder="Correo electrónico o usuario">
+        </div>
+        <div class="form-group">
+            <input type="password" id="password" placeholder="Contraseña">
+        </div>
+
+        <a href="#" class="forgot-password">¿Olvidaste tu contraseña?</a>
+
+        <button class="btn-primary" onclick="iniciarSesion()">Ingresar</button>
+
+        <div class="divider">O ingresá con</div>
+
+        <button class="btn-social btn-google" onclick="loginSocial('Google')">
+            <span class="icon-social">G</span> Continuar con Google
+        </button>
+        <button class="btn-social btn-facebook" onclick="loginSocial('Facebook')">
+            <span class="icon-social">f</span> Continuar con Facebook
+        </button>
+    </div>
+
+    <script>
+        function iniciarSesion() {
+            const usuario = document.getElementById('usuario').value;
+            const password = document.getElementById('password').value;
+            
+            // Saber si seleccionó Cliente o Músico
+            const tipoUsuario = document.querySelector('input[name="tipo-usuario"]:checked').value;
+
+            if (usuario === "" || password === "") {
+                alert("Por favor, ingresá tu usuario y contraseña.");
+                return;
+            }
+
+            // Dependiendo del rol, lo mandamos a una pantalla o a otra
+            if (tipoUsuario === "cliente") {
+                alert("Bienvenido. Entrando como Cliente...");
+                window.location.href = "home.html"; // Lo manda a la vidriera de grupos
+            } else {
+                alert("Bienvenido. Entrando al panel de Músicos...");
+                // Acá a futuro podemos crear una pantalla "panel_musico.html"
+            }
+        }
+
+        // Función simulada para los botones sociales
+        function loginSocial(redSocial) {
+            const tipoUsuario = document.querySelector('input[name="tipo-usuario"]:checked').value;
+            alert("Conectando de forma segura con " + redSocial + " para ingresar como " + tipoUsuario + "...");
+            
+            if (tipoUsuario === "cliente") {
+                window.location.href = "home.html";
+            }
+        }
+    </script>
+
+</body>
+</html>
